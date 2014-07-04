@@ -1,4 +1,4 @@
 CMDB
 ====
 
-CMDB FOR OPENERP
+CMDB FOR Odoo
