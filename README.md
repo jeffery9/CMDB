@@ -1,0 +1,4 @@
+CMDB
+====
+
+CMDB FOR OPENERP
