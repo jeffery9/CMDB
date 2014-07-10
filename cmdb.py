@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 from openerp.osv import fields,osv
 from openerp import tools
+import string
+
+SECURITYLEVEL = [('high','High'),('low','Low'),('middle','Middle')]
+EXECUTELEVEL = [('high','High'),('low','Low'),('middle','Middle')]
+DATATYPE = [('string','String'),('integer','Integer'),('boolean','Boolean')]
+CONTROLTYPE = [('input','Input'),('dropdonlist','DropDownList'),('checkbox','CheckBox'),('radiolist','RadioList')]
+RELATIONS = [('hoston',"Host On"),("allocateto","Allocate To"),("parentchild","Parent-Child"),
+             ("connected","Connected"),("installedsoftware","Installed Software"),("documentbackup","Document backup"),
+             ("dependent","Dependent"),("contains","Contains"),("ispartof","Is part of")]
 
 class AssetTemplateCategory(osv.osv):
     _name="cmdb.assettemplatecategory"
@@ -174,10 +183,6 @@ class AssetTemplate(osv.osv):
     _order = "parent_left"
 AssetTemplate()
 
-SECURITYLEVEL = [('high','High'),('low','Low'),('middle','Middle')]
-EXECUTELEVEL = [('high','High'),('low','Low'),('middle','Middle')]
-DATATYPE = [('string','String'),('integer','Integer'),('boolean','Boolean')]
-CONTROLTYPE = [('input','Input'),('dropdonlist','DropDownList'),('checkbox','CheckBox'),('radiolist','RadioList')]
 
 class AssetTemplateAttribute(osv.osv):
     _name="cmdb.assettemplate.attribute"
@@ -271,9 +276,10 @@ class Asset(osv.osv):
         "code":fields.char(string="Code",size=200,required=True,help="Code must be unique"),
         "description":fields.char(string="Description",size=1000,required=False,help="Description the target of template"),
         #"complete_name": fields.function(_name_get_fnc, type="char", string='Full Name'),
-        "assettemplate_id": fields.many2one('cmdb.assettemplate',string='Parent', select=True, ondelete='cascade'),
+        "assettemplate_id": fields.many2one('cmdb.assettemplate',string='Template', select=True, ondelete='cascade'),
         #'child_id': fields.one2many('cmdb.assettemplate', 'parent_id', string='Children'),
         "attributes":fields.one2many("cmdb.asset.attribute","asset_id",string="Attributes"),
+        "relations":fields.one2many("cmdb.asset.relation","asset_id",string="Relations"),
         "actions":fields.one2many("cmdb.asset.action","asset_id",string="Actions"),
         #"inherit_attributes":fields.function(get_inherit_attributes,type="one2many",relation="cmdb.assettemplate.attribute",method=True,fnct_search=search_inherit_attributes,string="Inherit Attributes"),
         'sequence': fields.integer(string='Sequence', select=True, help="Gives the sequence order when displaying a list of product \
@@ -310,6 +316,25 @@ AssetAttribute()
 
 class AssetAction(osv.osv):
     _name="cmdb.asset.action"
+
+    def _format_action_command(self,cr,uid,asset_id,command,context=None):
+        attr_rep = self.pool.get("cmdb.asset.attribute")
+        attr_ids = attr_rep.search(cr,uid,[('asset_id','=',asset_id)],context=context)
+        attr_items = attr_rep.read(cr,uid,attr_ids,[],context=context)
+        values = {}
+        for item in attr_items:
+            values[item['code']] = item['defaultvalue']
+        t_cmd = string.Template(command)
+        content = t_cmd.safe_substitute(values)
+        return content
+
+    def get_format_asset_action(self,cr,uid,ids,name,arg,context=None):
+        result = dict.fromkeys(ids,'None')
+        for item in self.read(cr,uid,ids,['id','asset_id','command'],context=context):
+            result[item["id"]] = self._format_action_command(cr,uid,item["asset_id"][0],item["command"],context=context)
+            print result
+            #result[item["id"]] = "abc"
+        return result
     
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
@@ -318,6 +343,7 @@ class AssetAction(osv.osv):
         "executelevel":fields.selection(SECURITYLEVEL,string="Execute Level"),
         "estimatetime":fields.integer(string="Estimate Time",required=True,help="Estimate execute time by hour"),
         "command":fields.text(string="Command",required=True,help="Command template,parameters with {name}"),
+        "cmdcontent":fields.function(get_format_asset_action,string="CMD Content",type="char"),
         "ordernum":fields.integer(string="Order",required=True,help="The execute order"),
         "batch":fields.char(string="Batch",required=False,help="If set batch,must execute together"),
     }
@@ -328,3 +354,13 @@ class AssetAction(osv.osv):
     }
 AssetAction()
 
+class AssetRelation(osv.osv):
+    _name = "cmdb.asset.relation"
+    
+    _columns = {
+        "asset_id":fields.many2one("cmdb.asset",string="Asset"),
+        "relationtype":fields.selection(RELATIONS,string="Relation",required=True),
+        "asset_id2":fields.many2one("cmdb.asset",string="Asset To"),
+    }
+
+AssetRelation()

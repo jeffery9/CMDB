@@ -169,7 +169,22 @@
 			</field>
 		</record>
 
-        <record id="cmdb_asset_form_view" model="ir.ui.view">
+		<record id="view_cmdb_asset_filter" model="ir.ui.view">
+			<field name="name">view.cmdb.asset.filter</field>
+			<field name="model">cmdb.asset</field>
+			<field name="arch" type="xml">
+				<search string="Search Asset">
+					<field name="name"/>
+					<field name="code"/>
+					<field name="description"/>
+					<group expand="0" string="Group By....">
+						<filter string="Template" name="group_template_id" domain="[]" context="{'group_by':'assettemplate_id'}"/>
+					</group>
+				</search>
+			</field>
+		</record>
+		
+		<record id="cmdb_asset_form_view" model="ir.ui.view">
             <field name="name">cmdb.asset.form</field>
             <field name="model">cmdb.asset</field>
             <field name="arch" type="xml">
@@ -185,35 +200,44 @@
                                 <field name="remark" placeholder="Remark...." colspan="4" nolabel="1"/>
                         </group>
                         <notebook>
-						<page string="Attributes">
-							<field name="attributes">
-								  <tree string="Attributes" version="7.0" editable="bottom">
-									  <field name="name"/>
-									  <field name="code"/>
-									  <!--<field name="tooltip"/>
-									  <field name="securitylevel"/>
-									  <field name="datatype"/>
-									  <field name="controltype"/>
-									  <field name="sourcefrom"/>
-									  <field name="sourcetype"/>-->
-									  <field name="defaultvalue"/>
-							  	  </tree> 
-						   	  </field>
-						  </page>                        
-                          <page string="Actions">
-                                <field name="actions">
-                                    <tree string="Actions" version="7.0" editable="bottom">
-                                        <field name="name"/>
-                                        <field name="code"/>
-                                        <field name="executelevel"/>
-                                        <field name="estimatetime"/>
-                                        <field name="ordernum"/>
-                                        <field name="batch"/>
-                                        <field name="command"/>
-                                    </tree> 
-                                </field>
-                            </page>
-                        </notebook>
+							<page string="Attributes">
+								<field name="attributes">
+									  <tree string="Attributes" version="7.0" editable="bottom">
+										  <field name="name"/>
+										  <field name="code"/>
+										  <!--<field name="tooltip"/>
+										  <field name="securitylevel"/>
+										  <field name="datatype"/>
+										  <field name="controltype"/>
+										  <field name="sourcefrom"/>
+										  <field name="sourcetype"/>-->
+										  <field name="defaultvalue"/>
+									  </tree> 
+								  </field>
+							</page>                        
+							<page string="Relations">
+								<field name="relations">
+									<tree string="Relations" version="7.0" editable="bottom">
+										<field name="relationtype"/>
+										<field name="asset_id2"/>
+									</tree>
+								</field>
+							</page>
+							<page string="Actions">
+								<field name="actions">
+									<tree string="Actions" version="7.0" editable="bottom">
+										<field name="name"/>
+										<field name="code"/>
+										<field name="executelevel"/>
+										<field name="estimatetime"/>
+										<field name="ordernum"/>
+										<field name="batch"/>
+										<field name="command"/>
+											<field name="cmdcontent"/>
+										</tree> 
+									</field>
+							</page>
+						</notebook>
                     </sheet>
                 </form>
             </field>
@@ -269,6 +293,7 @@
             <!--<field name="domain">[('parent_id','=',False)]</field>-->
             <field name="domain">[]</field>
             <field name="view_type">form</field>
+			<field name="search_view_id" ref="view_cmdb_asset_filter"/>
         </record>
        
 		<menuitem id="menu_cmdb_root" name="CMDB" sequence="10" />
