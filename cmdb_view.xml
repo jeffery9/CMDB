@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+        <record id="cmdb_assettemplatecategory_search_view" model="ir.ui.view">
+            <field name="name">cmdb.assettemplatecategory.search</field>
+            <field name="model">cmdb.assettemplatecategory</field>
+            <field name="arch" type="xml">
+                <search string="Category">
+                    <field name="name" string="Name"/>
+                    <field name="parent_id"/>
+                </search>
+            </field>
+        </record>
+        
+        <record id="cmdb_assettemplatecategory_form_view" model="ir.ui.view">
+            <field name="name">cmdb.assettemplatecategory.form</field>
+            <field name="model">cmdb.assettemplatecategory</field>
+            <field name="arch" type="xml">
+                <form string="Category" version="7.0">
+                    <sheet>
+                    	<group col="4">
+							<field name="parent_id" string="Parent"/>
+							<field name="name" string="Name"/>
+						</group>
+						<group col="4" string="Remark">
+								<field name="remark" placeholder="Remark...." colspan="4" nolabel="1"/>
+						</group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="cmdb_assettemplate_category_list_view" model="ir.ui.view">
+            <field name="name">cmdb.assettemplatecategory.list</field>
+            <field name="model">cmdb.assettemplatecategory</field>
+            <field name="priority">1</field>
+            <field name="view_mode">tree,form</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Category">
+                    <field name="complete_name"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="cmdb_assettemplate_form_view" model="ir.ui.view">
+            <field name="name">cmdb.assettemplate.form</field>
+            <field name="model">cmdb.assettemplate</field>
+            <field name="arch" type="xml">
+                <form string="Category" version="7.0">
+                    <sheet>
+                        <group col="4">
+                            <field name="parent_id" on_change="onchange_parent_get_inherit_attributes(parent_id)"/>
+                            <field name="category_id"/>
+                            <field name="name"/>
+                            <field name="code"/>                            
+                        </group>
+                        <group col="4" string="Remark">
+                                <field name="description" placeholder="Remark...." colspan="4" nolabel="1"/>
+                        </group>
+                        <notebook>
+                            <!--<page string="Inherit Attributes">
+                                <field name="inherit_attributes">
+                                    <tree string="Inherit Attributes" version="7.0" >
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="tooltip"/>
+                                        <field name="securitylevel"/>
+                                        <field name="datatype"/>
+                                        <field name="controltype"/>
+                                        <field name="sourcefrom"/>
+                                        <field name="sourcetype"/>
+                                        <field name="defaultvalue"/>                                       
+                                    </tree>
+                                </field>
+                        </page>-->
+						  <page string="Attributes">
+							  <field name="attributes">
+								  <tree string="Attributes" version="7.0" editable="bottom">
+									  <field name="name"/>
+									  <field name="code"/>
+									  <field name="tooltip"/>
+									  <field name="securitylevel"/>
+									  <field name="datatype"/>
+									  <field name="controltype"/>
+									  <field name="sourcefrom"/>
+									  <field name="sourcetype"/>
+									  <field name="defaultvalue"/>
+							  	  </tree> 
+						   	  </field>
+						  </page>                        
+                          <page string="Actions">
+                                <field name="actions">
+                                    <tree string="Actions" version="7.0" editable="bottom">
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="executelevel"/>
+                                        <field name="estimatetime"/>
+                                        <field name="ordernum"/>
+                                        <field name="batch"/>
+                                        <field name="command"/>
+                                    </tree> 
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="cmdb_assettemplate_list_view" model="ir.ui.view">
+            <field name="name">cmdb.assettemplate.list</field>
+            <field name="model">cmdb.assettemplate</field>
+            <field name="priority">1</field>
+            <field name="view_mode">tree,form</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Template">
+                    <field name="complete_name"/>
+                    <field name="category_id"/>
+                </tree>
+            </field>
+        </record>
+  
+  
+        <record id="cmdb_template_attibute_view_form" model="ir.ui.view">
+            <field name="name">cmdb.assettemplate.attribute.form</field>
+            <field name="model">cmdb.assettemplate.attribute</field>
+            <field name="arch" type="xml">
+                <form string="Attribute" version="7.0">
+                    <sheet>
+                    	<group col="4">
+							<field name="assettemplate_id"/>
+							<field name="name"/>
+							<field name="code"/>
+							<field name="tooltip"/>
+							<field name="securitylevel"/>
+							<field name="datatype"/>
+							<field name="controltype"/>
+							<field name="sourcefrom"/>
+							<field name="sourcetype"/>
+							<field name="defaultvalue"/>
+						</group>
+						
+						<group col="4" string="Remark">
+								<field name="remark" placeholder="Remark...." colspan="4" nolabel="1"/>
+						</group>
+                    </sheet>
+                </form>
+            </field>
+		</record>
+
+		<record id="cmdb_template_attribute_list_view" model="ir.ui.view">
+			<field name="name">cmdb.assettemplate.attribute.list</field>
+			<field name="model">cmdb.assettemplate.attribute</field>
+			<field name="view_mode">tree,form</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<field name="assettemplate_id"/>
+				<field name="name"/>
+				<field name="code"/>
+				<field name="tooltip"/>
+				<field name="securitylevel"/>
+				<field name="datatype"/>
+				<field name="controltype"/>
+				<field name="sourcefrom"/>
+				<field name="sourcetype"/>
+				<field name="defaultvalue"/>
+			</field>
+		</record>
+
+        <record id="cmdb_asset_form_view" model="ir.ui.view">
+            <field name="name">cmdb.asset.form</field>
+            <field name="model">cmdb.asset</field>
+            <field name="arch" type="xml">
+                <form string="Asset" version="7.0">
+                    <sheet>
+                        <group col="4">
+                            <field name="assettemplate_id" on_change="onchange_parent_get_inherit_attributes(assettemplate_id)"/>
+                            <field name="name"/>
+                            <field name="code"/>                            
+							<field name="description"/>
+                        </group>
+                        <group col="4" string="Remark">
+                                <field name="remark" placeholder="Remark...." colspan="4" nolabel="1"/>
+                        </group>
+                        <notebook>
+						<page string="Attributes">
+							<field name="attributes">
+								  <tree string="Attributes" version="7.0" editable="bottom">
+									  <field name="name"/>
+									  <field name="code"/>
+									  <!--<field name="tooltip"/>
+									  <field name="securitylevel"/>
+									  <field name="datatype"/>
+									  <field name="controltype"/>
+									  <field name="sourcefrom"/>
+									  <field name="sourcetype"/>-->
+									  <field name="defaultvalue"/>
+							  	  </tree> 
+						   	  </field>
+						  </page>                        
+                          <page string="Actions">
+                                <field name="actions">
+                                    <tree string="Actions" version="7.0" editable="bottom">
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="executelevel"/>
+                                        <field name="estimatetime"/>
+                                        <field name="ordernum"/>
+                                        <field name="batch"/>
+                                        <field name="command"/>
+                                    </tree> 
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="cmdb_asset_list_view" model="ir.ui.view">
+            <field name="name">cmdb.asset.list</field>
+            <field name="model">cmdb.asset</field>
+            <field name="priority">1</field>
+            <field name="view_mode">tree,form</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Template">
+					<field name="assettemplate_id"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="aasettemplatecategory_category_action" model="ir.actions.act_window">
+            <field name="name">Category</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cmdb.assettemplatecategory</field>
+            <!--<field name="domain">[('parent_id','=',False)]</field>-->
+            <field name="domain">[]</field>
+           <field name="view_type">form</field>
+	   </record>
+
+       <record id="cmdb_action_templateattribute_show" model="ir.actions.act_window">
+            <field name="name">Attributes</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cmdb.assettemplate.attribute</field>
+            <!--<field name="domain">[('parent_id','=',False)]</field>-->
+            <field name="domain">[]</field>
+           <field name="view_type">form</field>
+	   </record>
+	  
+
+       <record id="cmdb_action_assettemplate_show" model="ir.actions.act_window">
+            <field name="name">AssetTemplate</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cmdb.assettemplate</field>
+            <!--<field name="domain">[('parent_id','=',False)]</field>-->
+            <field name="domain">[]</field>
+            <field name="view_type">form</field>
+        </record>
+
+       <record id="cmdb_action_asset_show" model="ir.actions.act_window">
+            <field name="name">Asset</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cmdb.asset</field>
+            <!--<field name="domain">[('parent_id','=',False)]</field>-->
+            <field name="domain">[]</field>
+            <field name="view_type">form</field>
+        </record>
+       
+		<menuitem id="menu_cmdb_root" name="CMDB" sequence="10" />
+       
+		<menuitem id="menu_cmdb_root" name="CMDB" sequence="10" />
+		<menuitem id="menu_cmdb_template_root" name="Templates" parent="menu_cmdb_root" sequence="20"/>
+		<menuitem id="menu_cmdb_templatecategory_manager" action="aasettemplatecategory_category_action" name="Categoryies" parent="menu_cmdb_template_root" sequence="30"/>
+		<menuitem id="menu_cmdb_assettemplate_manager" action="cmdb_action_assettemplate_show" name="AssetTemplates" parent="menu_cmdb_template_root" sequence="30"/>
+		<menuitem id="menu_cmdb_template_attirbute_manager" action="cmdb_action_templateattribute_show" name="TemplateAttributes" parent="menu_cmdb_template_root" sequence="30"/>
+		<menuitem id="menu_cmdb_asset_root" name="Assets" parent="menu_cmdb_root" sequence="30"/>
+		<menuitem id="menu_cmdb_asset_manager" action="cmdb_action_asset_show" name="Assets" parent="menu_cmdb_asset_root" sequence="30"/>
+	</data>
+</openerp>
