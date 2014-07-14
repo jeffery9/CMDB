@@ -11,6 +11,25 @@ RELATIONS = [('hoston',"Host On"),("allocateto","Allocate To"),("parentchild","P
              ("connected","Connected"),("installedsoftware","Installed Software"),("documentbackup","Document backup"),
              ("dependent","Dependent"),("contains","Contains"),("ispartof","Is part of")]
 
+"""
+Positive 正向
+Negative 反向
+Double   双向
+"""
+RELATIONTYPES = [("positive","Positive"),("negative","Negative"),("double","Double")]
+
+class RelationType(osv.osv):
+    _name = "cmdb.relationtype"
+    _columns = {
+        "name":fields.char(string="Name",size=100,required=True),
+        "code":fields.char(string="Code",size=100,required=True),
+        "direction":fields.selection(RELATIONTYPES,size=100,required=True),
+        "description":fields.char(string="Description",size=500),
+    }
+    _sql_constraints = [("code_unique","unique(code)","code must be unique")]
+
+RelationType()
+
 class AssetTemplateCategory(osv.osv):
     _name="cmdb.assettemplatecategory"
     _description = "Asset Template category"
@@ -163,6 +182,7 @@ class AssetTemplate(osv.osv):
         'complete_name': fields.function(_name_get_fnc, type="char", string='Full Name'),
         'parent_id': fields.many2one('cmdb.assettemplate',string='Parent', select=True, ondelete='cascade'),
         'child_id': fields.one2many('cmdb.assettemplate', 'parent_id', string='Children'),
+        "attribute_categories":fields.one2many("cmdb.assettemplate.attribute.category","template_id",string="Categoryies"),
         "attributes":fields.one2many("cmdb.assettemplate.attribute","assettemplate_id",string="Attributes"),
         "actions":fields.one2many("cmdb.assettemplate.action","assettemplate_id",string="Actions"),
         #"inherit_attributes":fields.function(get_inherit_attributes,type="one2many",relation="cmdb.assettemplate.attribute",method=True,fnct_search=search_inherit_attributes,string="Inherit Attributes"),
@@ -183,12 +203,22 @@ class AssetTemplate(osv.osv):
     _order = "parent_left"
 AssetTemplate()
 
+class AssetTemplateAttributeCategory(osv.osv):
+    _name = "cmdb.assettemplate.attribute.category"
+    _columns = {
+        "name":fields.char(string="Name",size=100,required=True),
+        "template_id":fields.many2one("cmdb.assettemplate",string="AssetTemplate"),
+        "description":fields.char(string="Description",size=500),
+        "attributes":fields.one2many("cmdb.assettemplate.attribute","attribute_category_id",string="Attributes"),
+    }
+AssetTemplateAttributeCategory()
 
 class AssetTemplateAttribute(osv.osv):
     _name="cmdb.assettemplate.attribute"
 
     _columns = {
         "assettemplate_id":fields.many2one("cmdb.assettemplate",string="Template"),
+        "attribute_category_id":fields.many2one("cmdb.assettemplate.attribute.category",string="Category"),
         "name":fields.char(string="Name",size=200,required=True,help="The name of the attribute"),
         "code":fields.char(string="Code",size=200,required=True,help="unique"),
         "tooltip":fields.char(string="Tool Tip", size=500),
@@ -233,6 +263,9 @@ AssetTemplateAction()
 class Asset(osv.osv):
     _name="cmdb.asset"
     _description = "Asset"
+
+    def _get_relation_types(self,cr,uid,ids,context=None):
+        pass
 
     def _get_inherit_tree(self,cr,uid,ids,parent_id,context=None):
         print "parent_id is %s" % parent_id

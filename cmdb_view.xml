@@ -42,6 +42,57 @@
                 </tree>
             </field>
         </record>
+
+		<record id="cmdb_template_attribute_category_form_view" model="ir.ui.view">
+			<field name="name">cmdb.template.attribute.category.form.view</field>
+			<field name="model">cmdb.assettemplate.attribute.category</field>
+			<field name="view_mode">tree,form</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Attribute Category">
+					<sheet>
+						<group col="4">
+							<field name="name"/>
+							<field name="template_id"/>
+						</group>
+						<group col="4" colspan="4">
+							<field name="description"/>
+						</group>
+						<notebook>
+							<page string="Attributes">
+								<field name="attributes">
+									<tree string="Attributes" version="7.0">
+									  <field name="name"/>
+									  <field name="code"/>
+									  <field name="tooltip"/>
+									  <field name="securitylevel"/>
+									  <field name="datatype"/>
+									  <field name="controltype"/>
+									  <field name="sourcefrom"/>
+									  <field name="sourcetype"/>
+									  <field name="defaultvalue"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="cmdb_template_attribute_category_list_view" model="ir.ui.view">
+			<field name="name">cmdb.assettemplate.attribute.category.list.view</field>
+			<field name="model">cmdb.assettemplate.attribute.category</field>
+			<field name="priority">1</field>
+			<field name="view_mode">tree,form</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Category">
+					<field name="name"/>
+					<field name="description"/>
+				</tree>
+			</field>
+		</record>
         
         <record id="cmdb_assettemplate_form_view" model="ir.ui.view">
             <field name="name">cmdb.assettemplate.form</field>
@@ -74,7 +125,15 @@
                                     </tree>
                                 </field>
                         </page>-->
-						  <page string="Attributes">
+						<page string="Categories">
+							<field name="attribute_categories">
+								<tree string="Categories" version="7.0">
+									<field name="name"/>
+									<field name="description"/>
+								</tree>
+							</field>
+						</page>
+						<page string="Attributes">
 							  <field name="attributes">
 								  <tree string="Attributes" version="7.0" editable="bottom">
 									  <field name="name"/>
