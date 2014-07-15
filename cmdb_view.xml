@@ -43,6 +43,54 @@
             </field>
         </record>
         
+        <record id="view_cmdb_asset_relationtype_filter" model="ir.ui.view">
+            <field name="name">view.cmdb.asset.relationtype.filter</field>
+            <field name="model">cmdb.relationtype</field>
+            <field name="arch" type="xml">
+                <search string="Relation Type">
+                    <field name="name"/>
+                    <field name="code"/>
+					<field name="direction"/>
+					<field name="description"/>
+                </search>
+            </field>
+        </record>
+        
+        <record id="view_cmdb_relationtype_form" model="ir.ui.view">
+            <field name="name">view.cmdb.relationtype.form</field>
+            <field name="model">cmdb.relationtype</field>
+            <field name="arch" type="xml">
+                <form string="Relation Type" version="7.0">
+                    <sheet>
+                    	<group col="4">
+							<field name="name"/>
+							<field name="code"/>
+							<field name="direction"/>
+						</group>
+						<group col="4" string="Description">
+								<field name="description" placeholder="Description...." colspan="4" nolabel="1"/>
+						</group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_cmdb_relationtype_list" model="ir.ui.view">
+            <field name="name">view.cmdb.relationtype.list</field>
+            <field name="model">cmdb.relationtype</field>
+            <field name="priority">1</field>
+            <field name="view_mode">tree,form</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Relation Types">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="direction"/>
+                    <field name="description"/>
+                </tree>
+            </field>
+        </record>
+
         <record id="cmdb_assettemplate_form_view" model="ir.ui.view">
             <field name="name">cmdb.assettemplate.form</field>
             <field name="model">cmdb.assettemplate</field>
@@ -279,7 +327,14 @@
             <field name="name">Category</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cmdb.assettemplatecategory</field>
-            <!--<field name="domain">[('parent_id','=',False)]</field>-->
+            <field name="domain">[]</field>
+           <field name="view_type">form</field>
+	   </record>
+
+        <record id="cmdb_action_relationtype_show" model="ir.actions.act_window">
+            <field name="name">Relation Type</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cmdb.relationtype</field>
             <field name="domain">[]</field>
            <field name="view_type">form</field>
 	   </record>
@@ -318,6 +373,7 @@
 		<menuitem id="menu_cmdb_root" name="CMDB" sequence="10" />
 		<menuitem id="menu_cmdb_template_root" name="Templates" parent="menu_cmdb_root" sequence="20"/>
 		<menuitem id="menu_cmdb_templatecategory_manager" action="aasettemplatecategory_category_action" name="Categoryies" parent="menu_cmdb_template_root" sequence="30"/>
+		<menuitem id="menu_cmdb_relationtype_manager" action="cmdb_action_relationtype_show" name="Relation Types" parent="menu_cmdb_template_root" sequence="30"/>
 		<menuitem id="menu_cmdb_assettemplate_manager" action="cmdb_action_assettemplate_show" name="AssetTemplates" parent="menu_cmdb_template_root" sequence="30"/>
 		<menuitem id="menu_cmdb_template_attirbute_manager" action="cmdb_action_templateattribute_show" name="TemplateAttributes" parent="menu_cmdb_template_root" sequence="30"/>
 		<menuitem id="menu_cmdb_asset_root" name="Assets" parent="menu_cmdb_root" sequence="30"/>
