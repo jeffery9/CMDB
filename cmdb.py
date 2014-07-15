@@ -125,6 +125,7 @@ def get_tree_low2top(tablename,cr,uid,parent_id,context=None):
     parent_ids.append(parent_id)
     return parent_ids
 
+
 def get_list_from_nestedlist(item):
     if not item:
         return []
@@ -201,16 +202,24 @@ class AssetTemplate(osv.osv):
 
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
         result = []
-        parent_ids =  self._get_inherit_tree(cr, uid,parentid, context=context)
+        action_res = []
+        parent_ids =  get_tree_low2top("cmdb_assettemplate",cr,uid,parentid,context=context) 
+        #self._get_inherit_tree(cr, uid,parentid, context=context)
         attr_rep = self.pool.get("cmdb.assettemplate.attribute")
         attr_ids = attr_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
         for item in attr_rep.read(cr,uid,attr_ids,[],context=context):
             result.append(item)
+        
+        action_rep = self.pool.get("cmdb.assettemplate.action")
+        action_ids = attr_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
+        for item in action_rep.read(cr,uid,action_ids,[],context=context):
+            action_res.append(item)
         #result2[ids] = result
         print "result is %s" % result
         return  {
                     "value": {
-                        "attributes" : result,
+                        "inherit_attributes" : result,
+                        "inherit_actions": action_res,
                     }
                 }
         
