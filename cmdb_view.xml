@@ -100,7 +100,7 @@
 										  <field name="sourcetype"/>
 										  <field name="defaultvalue"/>
 										  <field name="state"/>
-										  <button name="push" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
+										  <button name="push_attribute" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
 										  </tree> 
 									  </field>
 								  </page>                        
@@ -114,6 +114,8 @@
 											<field name="ordernum"/>
 											<field name="batch"/>
 											<field name="command"/>
+											<field name="state"/>
+										  	<button name="push_action" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
 										</tree> 
 									</field>
 								</page>
