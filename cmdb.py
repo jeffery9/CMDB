@@ -125,6 +125,15 @@ def get_tree_low2top(tablename,cr,uid,parent_id,context=None):
     parent_ids.append(parent_id)
     return parent_ids
 
+def get_list_from_nestedlist(item):
+    if not item:
+        return []
+    res = []
+    for line in item:
+        for i in line:
+            res.append(i)
+    return res
+
 class AssetTemplate(osv.osv):
     _name="cmdb.assettemplate"
     _description = "Asset Template"
@@ -165,19 +174,15 @@ class AssetTemplate(osv.osv):
     def get_inherit_attributes(self,cr,uid,ids,name,arg,context=None):
         res = {}
         for template in self.browse(cr,uid,ids,context=context):
-            template_id = template.id
             if not template.parent_id:
                 continue
             parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,template.parent_id.id,context=context) 
             if not parent_ids:
                 continue
             attrs = self.read(cr,uid,parent_ids,["id","attributes"],context=context)
-            attr_ids = []
             temp = [item["attributes"] for item in attrs]
-            for item in temp:
-                for i in item:
-                    attr_ids.append(i)
-            res[template_id] = attr_ids
+            attr_ids = get_list_from_nestedlist(temp)
+            res[template.id] = attr_ids
         return res
 
     def get_inherit_actions(self,cr,uid,ids,name,arg,context=None):
@@ -188,8 +193,10 @@ class AssetTemplate(osv.osv):
             parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,template.parent_id.id,context=context) 
             if not parent_ids:
                 continue
-            for item in self.browse(cr,uid,parent_ids,context=context):
-                res[template.id] = [x.id for x in item.actions]
+            actions = self.read(cr,uid,parent_ids,["id","actions"],context=context)
+            temp = [item["actions"] for item in actions]
+            action_ids = get_list_from_nestedlist(temp)
+            res[template.id] = action_ids
         return res
 
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
