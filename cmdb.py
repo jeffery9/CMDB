@@ -127,7 +127,7 @@ class AssetTemplate(osv.osv):
             level -= 1
         return True
     
-    def _get_inherit_tree(self,cr,uid,ids,parent_id,context=None):
+    def _get_inherit_tree(self,cr,uid,parent_id,context=None):
         print "parent_id is %s" % parent_id
         cr.execute("SELECT A.* FROM cmdb_assettemplate as A \
                     INNER JOIN cmdb_assettemplate as B \
@@ -142,9 +142,35 @@ class AssetTemplate(osv.osv):
         parent_ids.append(parent_id)
         return parent_ids
     
+    def get_inherit_attributes(self,cr,uid,ids,name,arg,context=None):
+        print "get_inherit_attributes name is %s ,arg is %s " % (name,arg)
+        res = {}
+        for template in self.browse(cr,uid,ids,context=context):
+            template_id = template.id
+            if not template.parent_id:
+                continue
+            parent_ids = self._get_inherit_tree(cr,uid,template.parent_id.id,context=context)
+            if not parent_ids:
+                continue
+            for item in self.browse(cr,uid,parent_ids,context=context):
+                res[template_id] = [x.id for x in item.attributes]
+        return res
+
+    def get_inherit_actions(self,cr,uid,ids,name,arg,context=None):
+        res = {}
+        for template in self.browse(cr,uid,ids,context=context):
+            if not template.parent_id:
+                continue
+            parent_ids = self._get_inherit_tree(cr,uid,template.parent_id.id,context=context)
+            if not parent_ids:
+                continue
+            for item in self.browse(cr,uid,parent_ids,context=context):
+                res[template.id] = [x.id for x in item.actions]
+        return res
+
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
         result = []
-        parent_ids =  self._get_inherit_tree(cr, uid, ids, parentid, context=context)
+        parent_ids =  self._get_inherit_tree(cr, uid,parentid, context=context)
         attr_rep = self.pool.get("cmdb.assettemplate.attribute")
         attr_ids = attr_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
         for item in attr_rep.read(cr,uid,attr_ids,[],context=context):
@@ -182,10 +208,10 @@ class AssetTemplate(osv.osv):
         'complete_name': fields.function(_name_get_fnc, type="char", string='Full Name'),
         'parent_id': fields.many2one('cmdb.assettemplate',string='Parent', select=True, ondelete='cascade'),
         'child_id': fields.one2many('cmdb.assettemplate', 'parent_id', string='Children'),
-        "attribute_categories":fields.one2many("cmdb.assettemplate.attribute.category","template_id",string="Categoryies"),
         "attributes":fields.one2many("cmdb.assettemplate.attribute","assettemplate_id",string="Attributes"),
         "actions":fields.one2many("cmdb.assettemplate.action","assettemplate_id",string="Actions"),
-        #"inherit_attributes":fields.function(get_inherit_attributes,type="one2many",relation="cmdb.assettemplate.attribute",method=True,fnct_search=search_inherit_attributes,string="Inherit Attributes"),
+        "inherit_attributes":fields.function(get_inherit_attributes,type="one2many",relation="cmdb.assettemplate.attribute",string="Inherit Attributes"),
+        "inherit_actions":fields.function(get_inherit_actions,type="one2many",relation="cmdb.assettemplate.action",string="Inherit Actions"),
         'sequence': fields.integer(string='Sequence', select=True, help="Gives the sequence order when displaying a list of product \
                                                              categories."),
         'parent_left': fields.integer('Left parent', select=True),
@@ -203,22 +229,11 @@ class AssetTemplate(osv.osv):
     _order = "parent_left"
 AssetTemplate()
 
-class AssetTemplateAttributeCategory(osv.osv):
-    _name = "cmdb.assettemplate.attribute.category"
-    _columns = {
-        "name":fields.char(string="Name",size=100,required=True),
-        "template_id":fields.many2one("cmdb.assettemplate",string="AssetTemplate"),
-        "description":fields.char(string="Description",size=500),
-        "attributes":fields.one2many("cmdb.assettemplate.attribute","attribute_category_id",string="Attributes"),
-    }
-AssetTemplateAttributeCategory()
-
 class AssetTemplateAttribute(osv.osv):
     _name="cmdb.assettemplate.attribute"
-
+    
     _columns = {
         "assettemplate_id":fields.many2one("cmdb.assettemplate",string="Template"),
-        "attribute_category_id":fields.many2one("cmdb.assettemplate.attribute.category",string="Category"),
         "name":fields.char(string="Name",size=200,required=True,help="The name of the attribute"),
         "code":fields.char(string="Code",size=200,required=True,help="unique"),
         "tooltip":fields.char(string="Tool Tip", size=500),
