@@ -99,6 +99,8 @@
 										  <field name="sourcefrom"/>
 										  <field name="sourcetype"/>
 										  <field name="defaultvalue"/>
+										  <field name="state"/>
+										  <button name="push" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
 										  </tree> 
 									  </field>
 								  </page>                        

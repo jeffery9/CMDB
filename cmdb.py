@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from openerp.osv import fields,osv
 from openerp import tools
+from openerp.modules.registry import RegistryManager
 import string
 
 SECURITYLEVEL = [('high','High'),('low','Low'),('middle','Middle')]
@@ -90,6 +91,40 @@ class AssetTemplateCategory(osv.osv):
 
 AssetTemplateCategory()
 
+def get_tree_top2low(objname,cr,uid,parent_id,context=None):
+    """
+    自顶向下的寻找，不包含自己
+    """
+    print "objname is %s,cr.dbname is %s,uid is %s,parent_id is %s" % (objname,cr.dbname,uid,parent_id)
+    if not objname:
+        return None
+    registry = RegistryManager.get(cr.dbname)
+    rep = registry.get(objname)
+    template = rep.read(cr,uid,parent_id,["parent_left","parent_right","id"],context=context)
+    if not template:
+        return None
+    res = rep.search(cr,uid,[("parent_left",">",template["parent_left"]),("parent_right","<",template["parent_right"])],context=context)
+    print "get_tree_low2top result is %s" % res
+    return res
+
+def get_tree_low2top(tablename,cr,uid,parent_id,context=None):
+    """
+    从自己向上找，即看自己所在的线上继承了多个元素 
+    """    
+    print "parent_id is %s" % parent_id
+    cr.execute("SELECT A.* FROM %s as A \
+                INNER JOIN %s as B \
+                ON 1=1 \
+                WHERE  A.parent_left < B.parent_left and \
+                    A.parent_left < B.parent_right and   \
+                    B.parent_left < A.parent_right and   \
+                    B.parent_right < A.parent_right      \
+                AND b.id=%s                               \
+                ORDER BY A.id" % (tablename,tablename, parent_id))
+    parent_ids = filter(None,map(lambda x:x[0],cr.fetchall()))
+    parent_ids.append(parent_id)
+    return parent_ids
+
 class AssetTemplate(osv.osv):
     _name="cmdb.assettemplate"
     _description = "Asset Template"
@@ -127,33 +162,22 @@ class AssetTemplate(osv.osv):
             level -= 1
         return True
     
-    def _get_inherit_tree(self,cr,uid,parent_id,context=None):
-        print "parent_id is %s" % parent_id
-        cr.execute("SELECT A.* FROM cmdb_assettemplate as A \
-                    INNER JOIN cmdb_assettemplate as B \
-                    ON 1=1 \
-                    WHERE  A.parent_left < B.parent_left and \
-                        A.parent_left < B.parent_right and   \
-                        B.parent_left < A.parent_right and   \
-                        B.parent_right < A.parent_right      \
-                    AND b.id=%s                               \
-                    ORDER BY A.id" % parent_id)
-        parent_ids = filter(None,map(lambda x:x[0],cr.fetchall()))
-        parent_ids.append(parent_id)
-        return parent_ids
-    
     def get_inherit_attributes(self,cr,uid,ids,name,arg,context=None):
-        print "get_inherit_attributes name is %s ,arg is %s " % (name,arg)
         res = {}
         for template in self.browse(cr,uid,ids,context=context):
             template_id = template.id
             if not template.parent_id:
                 continue
-            parent_ids = self._get_inherit_tree(cr,uid,template.parent_id.id,context=context)
+            parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,template.parent_id.id,context=context) 
             if not parent_ids:
                 continue
-            for item in self.browse(cr,uid,parent_ids,context=context):
-                res[template_id] = [x.id for x in item.attributes]
+            attrs = self.read(cr,uid,parent_ids,["id","attributes"],context=context)
+            attr_ids = []
+            temp = [item["attributes"] for item in attrs]
+            for item in temp:
+                for i in item:
+                    attr_ids.append(i)
+            res[template_id] = attr_ids
         return res
 
     def get_inherit_actions(self,cr,uid,ids,name,arg,context=None):
@@ -161,7 +185,7 @@ class AssetTemplate(osv.osv):
         for template in self.browse(cr,uid,ids,context=context):
             if not template.parent_id:
                 continue
-            parent_ids = self._get_inherit_tree(cr,uid,template.parent_id.id,context=context)
+            parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,template.parent_id.id,context=context) 
             if not parent_ids:
                 continue
             for item in self.browse(cr,uid,parent_ids,context=context):
@@ -216,12 +240,13 @@ class AssetTemplate(osv.osv):
                                                              categories."),
         'parent_left': fields.integer('Left parent', select=True),
         'parent_right': fields.integer('Right parent', select=True),
-        "remark":fields.text(string="Remark")
+        "remark":fields.text(string="Remark"),
     }
 
     _constraints = [
         (_check_recursion, '错误！您不能循环创建目录.', ['parent_id'])
     ]
+
 
     _parent_name = "parent_id"
     _parent_store = True
@@ -231,6 +256,13 @@ AssetTemplate()
 
 class AssetTemplateAttribute(osv.osv):
     _name="cmdb.assettemplate.attribute"
+
+    def push(self,cr,uid,ids,context=None):
+        print "push"
+        res = get_tree_top2low("cmdb.assettemplate",cr,uid,5,context=context)
+        print "push res is %s " % res
+        self.write(cr,uid,ids,{'state':'haspush'},context=context)
+        return True
     
     _columns = {
         "assettemplate_id":fields.many2one("cmdb.assettemplate",string="Template"),
@@ -244,12 +276,14 @@ class AssetTemplateAttribute(osv.osv):
         "sourcetype":fields.selection(DATATYPE, string="Source Type",required=False,size=100),
         "defaultvalue":fields.char(string="Default Value",size=500,required=False),
         "remark":fields.char(string="Remark",size=500,required=False),
+        "state":fields.selection([("haspush","Pushed"),("nopush","Not Push")],string="State"),
     }
 
     _defaults = {
         "securitylevel":"low",
         "controltype":"input",
         "sourcetype":"integer",
+        "state":"nopush",
     }
 
 AssetTemplateAttribute()
