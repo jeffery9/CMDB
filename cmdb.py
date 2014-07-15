@@ -274,9 +274,23 @@ class AssetTemplateAttribute(osv.osv):
     _name="cmdb.assettemplate.attribute"
 
     def push(self,cr,uid,ids,context=None):
-        print "push"
-        res = get_tree_top2low("cmdb.assettemplate",cr,uid,5,context=context)
-        print "push res is %s " % res
+        templates = self.read(cr,uid,ids,[],context=context)
+        print "templates is %s "%templates 
+        if not templates:
+            return False
+        template = templates[0]
+        template_id = template["assettemplate_id"][0]
+        res = get_tree_top2low("cmdb.assettemplate",cr,uid,template_id,context=context)
+        res.append(template_id)
+        #print "push res is %s " % res
+        asset_rep = self.pool.get("cmdb.asset")
+        asset_ids = asset_rep.search(cr,uid,[("assettemplate_id","in",res)],context=context)
+        print "asset_ids is %s " % asset_ids
+        asset_attr_rep = self.pool.get("cmdb.asset.attribute")
+        for asset_id in asset_ids:
+            template["asset_id"] = asset_id
+            print "attr instance is %s " % template
+            asset_attr_rep.create(cr,uid,template,context=context)
         self.write(cr,uid,ids,{'state':'haspush'},context=context)
         return True
     
