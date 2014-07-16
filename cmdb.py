@@ -24,7 +24,7 @@ class RelationType(osv.osv):
     _columns = {
         "name":fields.char(string="Name",size=100,required=True),
         "code":fields.char(string="Code",size=100,required=True),
-        "direction":fields.selection(RELATIONTYPES,size=100,required=True),
+        "direction":fields.selection(RELATIONTYPES,string="Direction",size=100,required=True),
         "description":fields.char(string="Description",size=500),
     }
     _sql_constraints = [("code_unique","unique(code)","code must be unique")]
@@ -200,6 +200,20 @@ class AssetTemplate(osv.osv):
             res[template.id] = action_ids
         return res
 
+    def get_inherit_relations(self,cr,uid,ids,name,arg,context=None):
+        res = {}
+        for template in self.browse(cr,uid,ids,context=context):
+            if not template.parent_id:
+                continue
+            parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,template.parent_id.id,context=context) 
+            if not parent_ids:
+                continue
+            relations = self.read(cr,uid,parent_ids,["id","relations"],context=context)
+            temp = [item["relations"] for item in relations]
+            relation_ids = get_list_from_nestedlist(temp)
+            res[template.id] = relation_ids
+        return res
+
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
         result = []
         action_res = []
@@ -250,8 +264,10 @@ class AssetTemplate(osv.osv):
         'child_id': fields.one2many('cmdb.assettemplate', 'parent_id', string='Children'),
         "attributes":fields.one2many("cmdb.assettemplate.attribute","assettemplate_id",string="Attributes"),
         "actions":fields.one2many("cmdb.assettemplate.action","assettemplate_id",string="Actions"),
+        "relations":fields.one2many("cmdb.assettemplate.relation","assettemplate_id",string="Relations"),
         "inherit_attributes":fields.function(get_inherit_attributes,type="one2many",relation="cmdb.assettemplate.attribute",string="Inherit Attributes"),
         "inherit_actions":fields.function(get_inherit_actions,type="one2many",relation="cmdb.assettemplate.action",string="Inherit Actions"),
+        "inherit_relations":fields.function(get_inherit_relations,type="one2many",relation="cmdb.assettemplate.relation",string="Inherit Relations"),
         'sequence': fields.integer(string='Sequence', select=True, help="Gives the sequence order when displaying a list of product \
                                                              categories."),
         'parent_left': fields.integer('Left parent', select=True),
@@ -318,9 +334,26 @@ class AssetTemplateAttribute(osv.osv):
 
 AssetTemplateAttribute()
 
+class AssetTemplateRelation(osv.osv):
+    _name = "cmdb.assettemplate.relation"
+    
+
+    _columns = {
+        "assettemplate_id":fields.many2one("cmdb.assettemplate",string="AssetTemplate"),
+        "relationtype_id":fields.many2one("cmdb.relationtype",string="Relation Type"),
+        #"relationtype":fields.selection(RELATIONS,string="Relation",required=True),
+        "assettemplate_id2":fields.many2one("cmdb.assettemplate",string="AssetTemplate To"),
+    }
+AssetTemplateRelation()
+
 class AssetTemplateAction(osv.osv):
     _name="cmdb.assettemplate.action"
     
+    def removeattr(self,cr,uid,ids,context=None):
+        self.unlink(cr,uid,ids,context=context)
+        #return template_id
+        return True
+
     def push_action(self,cr,uid,ids,context=None):
         templates = self.read(cr,uid,ids,[],context=context)
         print "templates is %s "%templates 
@@ -493,7 +526,8 @@ class AssetRelation(osv.osv):
     
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
-        "relationtype":fields.selection(RELATIONS,string="Relation",required=True),
+        "relationtype_id":fields.many2one("cmdb.relationtype",string="Relation Type"),
+        #"relationtype":fields.selection(RELATIONS,string="Relation",required=True),
         "asset_id2":fields.many2one("cmdb.asset",string="Asset To"),
     }
 

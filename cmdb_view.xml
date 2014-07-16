@@ -107,6 +107,46 @@
                                 <field name="description" placeholder="Remark...." colspan="4" nolabel="1"/>
                         </group>
                         <notebook>
+							<page string="Attributes">
+								<field name="attributes">
+									<tree string="Attributes" version="7.0" editable="bottom">
+										  <field name="name"/>
+										  <field name="code"/>
+										  <field name="tooltip"/>
+										  <field name="securitylevel"/>
+										  <field name="datatype"/>
+										  <field name="controltype"/>
+										  <field name="sourcefrom"/>
+										  <field name="sourcetype"/>
+										  <field name="defaultvalue"/>
+										  <field name="state"/>
+										  <button name="push_attribute" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
+									 </tree> 
+								  </field>
+							  </page>                        
+							  <page string="Actions">
+								<field name="actions">
+									<tree string="Actions" version="7.0" editable="bottom">
+										<field name="name"/>
+										<field name="code"/>
+										<field name="executelevel"/>
+										<field name="estimatetime"/>
+										<field name="ordernum"/>
+										<field name="batch"/>
+										<field name="command"/>
+										<field name="state"/>
+										<button name="push_action" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
+									</tree> 
+								</field>
+							</page>
+							<page string="Relations">
+								<field name="relations">
+									<tree string="Relations" version="7.0" editable="bottom">
+										<field name="relationtype_id"/>
+										<field name="assettemplate_id2"/>
+									</tree>
+								</field>
+							</page>
                             <page string="Inherit Attributes">
                                 <field name="inherit_attributes">
                                     <tree string="Inherit Attributes" version="7.0" >
@@ -135,38 +175,14 @@
 									</tree>
 								</field> 
 							</page>
-							<page string="Attributes">
-								  <field name="attributes">
-									  <tree string="Attributes" version="7.0" editable="bottom">
-										  <field name="name"/>
-										  <field name="code"/>
-										  <field name="tooltip"/>
-										  <field name="securitylevel"/>
-										  <field name="datatype"/>
-										  <field name="controltype"/>
-										  <field name="sourcefrom"/>
-										  <field name="sourcetype"/>
-										  <field name="defaultvalue"/>
-										  <field name="state"/>
-										  <button name="push_attribute" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
-										  </tree> 
-									  </field>
-								  </page>                        
-								  <page string="Actions">
-									<field name="actions">
-										<tree string="Actions" version="7.0" editable="bottom">
-											<field name="name"/>
-											<field name="code"/>
-											<field name="executelevel"/>
-											<field name="estimatetime"/>
-											<field name="ordernum"/>
-											<field name="batch"/>
-											<field name="command"/>
-											<field name="state"/>
-										  	<button name="push_action" type="object" string="Push" icon="gtk-go-forward" states="nopush" />
-										</tree> 
-									</field>
-								</page>
+							<page string="Inherit Relations">
+								<field name="inherit_relations">
+									<tree string="Inherit Relations" version="7.0">
+										<field name="relationtype_id"/>
+										<field name="assettemplate_id2"/>
+									</tree>
+								</field>
+							</page>
 							</notebook>
 						</sheet>
 					</form>
@@ -283,7 +299,7 @@
 							<page string="Relations">
 								<field name="relations">
 									<tree string="Relations" version="7.0" editable="bottom">
-										<field name="relationtype"/>
+										<field name="relationtype_id"/>
 										<field name="asset_id2"/>
 									</tree>
 								</field>
@@ -298,7 +314,7 @@
 										<field name="ordernum"/>
 										<field name="batch"/>
 										<field name="command"/>
-											<field name="cmdcontent"/>
+										<field name="cmdcontent"/>
 										</tree> 
 									</field>
 							</page>
