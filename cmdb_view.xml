@@ -284,14 +284,9 @@
 							<page string="Attributes">
 								<field name="attributes">
 									  <tree string="Attributes" version="7.0" editable="bottom">
-										  <field name="name"/>
-										  <field name="code"/>
-										  <!--<field name="tooltip"/>
-										  <field name="securitylevel"/>
-										  <field name="datatype"/>
-										  <field name="controltype"/>
-										  <field name="sourcefrom"/>
-										  <field name="sourcetype"/>-->
+										  <field name="isfromtemplate"/>
+										  <field name="name" attrs="{'readonly':[('isfromtemplate','=',True)]}"/>
+										  <field name="code" attrs="{'readonly':[('isfromtemplate','=',True)]}"/>
 										  <field name="defaultvalue"/>
 									  </tree> 
 								  </field>
