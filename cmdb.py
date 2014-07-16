@@ -425,7 +425,7 @@ class Asset(osv.osv):
         attr_ids = attr_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
         action_ids = action_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
         for item in attr_rep.read(cr,uid,attr_ids,[],context=context):
-            item["isfromtemplate"] = item["id"]
+            item["fromtemplate"] ="yes" #item["yes"]
             result.append(item)
         for item in action_rep.read(cr,uid,action_ids,[],context=context):
             action_result.append(item)
@@ -459,11 +459,14 @@ Asset()
 
 class AssetAttribute(osv.osv):
     _name="cmdb.asset.attribute"
-    
+   
+    def unlink(self,cr,uid,ids,context=None):
+        res = self.read(cr,uid,ids,["id","fromtemplate"],context=context)
+        print "res %s " % res
+        return True
+
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
-        #"assettemplate_id":fields.related("asset_id","assettemplate_id",type="many2one",relation="cmdb.assettemplate",string="AssetTemplate"),
-        #"templateattr_id":fields.many2one("cmdb.assettemplate.attribute",string="Template Attribute",required=False),
         "name":fields.char(string="Name",size=200,required=True,help="The name of the attribute"),
         "code":fields.char(string="Code",size=200,required=True,help="unique"),
         "tooltip":fields.char(string="Tool Tip", size=500),
@@ -473,7 +476,7 @@ class AssetAttribute(osv.osv):
         "sourcefrom":fields.char(string="Value Source",size=100,required=False),
         "sourcetype":fields.selection(DATATYPE, string="Source Type",required=False,size=100),
         "defaultvalue":fields.char(string="Value",size=500,required=False),
-        "isfromtemplate":fields.boolean(string="From Template",required=True),
+        "fromtemplate":fields.selection([("yes","Yes"),("no","No")],string="FromTemplate"),
         "remark":fields.char(string="Remark",size=500,required=False),
     }
 
@@ -481,7 +484,7 @@ class AssetAttribute(osv.osv):
         "securitylevel":"low",
         "controltype":"input",
         "sourcetype":"integer",
-        "isfromtemplate":False,
+        "fromtemplate":"no",
     }
 
 AssetAttribute()

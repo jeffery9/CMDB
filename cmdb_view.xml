@@ -283,10 +283,10 @@
                         <notebook>
 							<page string="Attributes">
 								<field name="attributes">
-									  <tree string="Attributes" version="7.0" editable="bottom">
-										  <field name="isfromtemplate"/>
-										  <field name="name" attrs="{'readonly':[('isfromtemplate','=',True)]}"/>
-										  <field name="code" attrs="{'readonly':[('isfromtemplate','=',True)]}"/>
+									  <tree string="Attributes" version="7.0" editable="bottom" delete="0">
+										  <field name="fromtemplate" attrs="{'readonly':[('fromtemplate','in',['yes'])]}"/>
+										  <field name="name" attrs="{'readonly':[('fromtemplate','in',['yes'])]}"/>
+										  <field name="code" attrs="{'readonly':[('fromtemplate','in',['yes'])]}"/>
 										  <field name="defaultvalue"/>
 									  </tree> 
 								  </field>
@@ -358,7 +358,6 @@
             <field name="domain">[]</field>
            <field name="view_type">form</field>
 	   </record>
-	  
 
        <record id="cmdb_action_assettemplate_show" model="ir.actions.act_window">
             <field name="name">AssetTemplate</field>
