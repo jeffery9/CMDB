@@ -279,6 +279,10 @@ class AssetTemplate(osv.osv):
         (_check_recursion, '错误！您不能循环创建目录.', ['parent_id'])
     ]
 
+    _defaults = {
+        "code":lambda self,cr,uid,context:self.pool.get("ir.sequence").get(cr,uid,"seq.assettemplate.code")
+    }
+
 
     _parent_name = "parent_id"
     _parent_store = True
@@ -330,6 +334,7 @@ class AssetTemplateAttribute(osv.osv):
         "controltype":"input",
         "sourcetype":"integer",
         "state":"nopush",
+        "code":lambda self,cr,uid,context:self.pool.get("ir.sequence").get(cr,uid,"seq.assettemplate.attribute.code")
     }
 
 AssetTemplateAttribute()
@@ -343,6 +348,10 @@ class AssetTemplateRelation(osv.osv):
         "relationtype_id":fields.many2one("cmdb.relationtype",string="Relation Type"),
         #"relationtype":fields.selection(RELATIONS,string="Relation",required=True),
         "assettemplate_id2":fields.many2one("cmdb.assettemplate",string="AssetTemplate To"),
+    }
+
+    _defaults = {
+        #"code":lambda self,cr,uid,context:self.pool.get("ir.sequence").get(cr,uid,"seq.assettemplate.relation.code"),
     }
 AssetTemplateRelation()
 
@@ -391,6 +400,7 @@ class AssetTemplateAction(osv.osv):
         "executelevel":"low",
         "ordernum":10,
         "state":"nopush",
+        "code":lambda self,cr,uid,context:self.pool.get("ir.sequence").get(cr,uid,"seq.assettemplate.action.code")
     }
 AssetTemplateAction()
 
@@ -453,6 +463,10 @@ class Asset(osv.osv):
         'sequence': fields.integer(string='Sequence', select=True, help="Gives the sequence order when displaying a list of product \
                                                              categories."),
         "remark":fields.text(string="Remark")
+    }
+
+    _defaults = {
+        "code":lambda self,cr,uid,context:self.pool.get("ir.sequence").get(cr,uid,"seq.asset.code"),
     }
 
 Asset()

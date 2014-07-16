@@ -101,7 +101,7 @@
                             <field name="parent_id" on_change="onchange_parent_get_inherit_attributes(parent_id)"/>
                             <field name="category_id"/>
                             <field name="name"/>
-                            <field name="code"/>                            
+                            <field name="code" readonly="True"/> 
                         </group>
                         <group col="4" string="Remark">
                                 <field name="description" placeholder="Remark...." colspan="4" nolabel="1"/>
@@ -111,7 +111,7 @@
 								<field name="attributes">
 									<tree string="Attributes" version="7.0" editable="bottom">
 										  <field name="name"/>
-										  <field name="code"/>
+										  <field name="code" readonly="True" />
 										  <field name="tooltip"/>
 										  <field name="securitylevel"/>
 										  <field name="datatype"/>
@@ -128,7 +128,7 @@
 								<field name="actions">
 									<tree string="Actions" version="7.0" editable="bottom">
 										<field name="name"/>
-										<field name="code"/>
+										<field name="code" readonly="True"/>
 										<field name="executelevel"/>
 										<field name="estimatetime"/>
 										<field name="ordernum"/>
@@ -213,7 +213,7 @@
                     	<group col="4">
 							<field name="assettemplate_id"/>
 							<field name="name"/>
-							<field name="code"/>
+							<field name="code" readonly="True"/>
 							<field name="tooltip"/>
 							<field name="securitylevel"/>
 							<field name="datatype"/>
@@ -274,7 +274,7 @@
                         <group col="4">
                             <field name="assettemplate_id" on_change="onchange_parent_get_inherit_attributes(assettemplate_id)"/>
                             <field name="name"/>
-                            <field name="code"/>                            
+                            <field name="code" readonly="True"/>                            
 							<field name="description"/>
                         </group>
                         <group col="4" string="Remark">
@@ -334,13 +334,58 @@
             </field>
         </record>
 
-        <record id="aasettemplatecategory_category_action" model="ir.actions.act_window">
+		<record id="seq_type_assettemplate_code" model="ir.sequence.type">
+			<field name="name">AssetTemplate Type Code</field>
+			<field name="code">seq.assettemplate.code</field>
+		</record>
+		<record forcecreate="1" id="seq_assettemplate_code" model="ir.sequence">
+			<field name="name">Sequence AssetTemplate Code</field>
+			<field name="code">seq.assettemplate.code</field>
+			<field name="prefix">T%(year)s%(month)s%(day)s</field>
+			<field name="padding">5</field>
+		</record>
+		
+		<record id="seq_type_assettemplate_attribute_code" model="ir.sequence.type">
+			<field name="name">AssetTemplate Attribute Type Code</field>
+			<field name="code">seq.assettemplate.attribute.code</field>
+		</record>
+		<record forcecreate="1" id="seq_assettemplate_attribute_code" model="ir.sequence">
+			<field name="name">Sequence AssetTemplate Attribute Code</field>
+			<field name="code">seq.assettemplate.attribute.code</field>
+			<field name="prefix">ATT</field>
+			<field name="padding">9</field>
+		</record>
+		
+		<record id="seq_type_assettemplate_action_code" model="ir.sequence.type">
+			<field name="name">AssetTemplate Actions Type Code</field>
+			<field name="code">seq.assettemplate.action.code</field>
+		</record>
+		<record forcecreate="1" id="seq_assettemplate_action_code" model="ir.sequence">
+			<field name="name">Sequence AssetTemplate Actions Code</field>
+			<field name="code">seq.assettemplate.action.code</field>
+			<field name="prefix">ACT</field>
+			<field name="padding">9</field>
+		</record>
+		
+		<record id="seq_type_asset_code" model="ir.sequence.type">
+			<field name="name">Asset Type Code</field>
+			<field name="code">seq.asset.code</field>
+		</record>
+		<record forcecreate="1" id="seq_asset_code" model="ir.sequence">
+			<field name="name">Sequence Asset Code</field>
+			<field name="code">seq.asset.code</field>
+			<field name="prefix">AST%(year)s%(month)s%(day)s</field>
+			<field name="padding">5</field>
+		</record>
+		
+		<record id="aasettemplatecategory_category_action" model="ir.actions.act_window">
             <field name="name">Category</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cmdb.assettemplatecategory</field>
             <field name="domain">[]</field>
            <field name="view_type">form</field>
 	   </record>
+
 
         <record id="cmdb_action_relationtype_show" model="ir.actions.act_window">
             <field name="name">Relation Type</field>
