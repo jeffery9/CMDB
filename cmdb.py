@@ -529,11 +529,21 @@ AssetAction()
 class AssetRelation(osv.osv):
     _name = "cmdb.asset.relation"
     
+    def create(self,cr,uid,data,context=None):
+        print "relation is %s " % data
+        rel_id = super(AssetRelation,self).create(cr,uid,data,context=context)
+        if not rel_id:
+            return False
+        rel_from = {"asset_id":data["asset_id2"],"relationtype_id":data["relationtype_id2"],"asset_id2":data["asset_id"],"relationtype_id2":data["relationtype_id"]}
+        print "rel_from is %s " % rel_from
+        super(AssetRelation,self).create(cr,uid,rel_from,context=context)
+        return rel_id
+
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
-        "relationtype_id":fields.many2one("cmdb.relationtype",string="Relation Type"),
-        #"relationtype":fields.selection(RELATIONS,string="Relation",required=True),
+        "relationtype_id":fields.many2one("cmdb.relationtype",string="Asset to type"),
         "asset_id2":fields.many2one("cmdb.asset",string="Asset To"),
+        "relationtype_id2":fields.many2one("cmdb.relationtype",string="Relation from type"),
     }
 
 AssetRelation()
