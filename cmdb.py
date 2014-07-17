@@ -236,23 +236,6 @@ class AssetTemplate(osv.osv):
                         "inherit_actions": action_res,
                     }
                 }
-        
-    def create(self, cr, uid, data, context=None):
-        print "create data is %s" % data
-        if not data.get("parent_id") or not len(data.get("attributes")):
-            pass
-        attributes = data.get("attributes")
-        needsave_attributes = []
-        for row in attributes:
-            attr_item = row[2]
-            if not attr_item or attr_item.get("assettemplate_id"):
-                continue
-            print attr_item
-            needsave_attributes.append([0,False,attr_item])
-        print "needsave_attributes is %s" % needsave_attributes
-        data["attributes"] = needsave_attributes
-        template_id = super(AssetTemplate, self).create(cr, uid, data, context=context)
-        return template_id
     
     _columns = {
         "category_id":fields.many2one("cmdb.assettemplatecategory",string="Category",select=True),
