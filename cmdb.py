@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from openerp.osv import fields,osv
 from openerp import tools
+from openerp.tools.translate import _
 from openerp.modules.registry import RegistryManager
 import string
 
@@ -528,9 +529,30 @@ AssetAction()
 
 class AssetRelation(osv.osv):
     _name = "cmdb.asset.relation"
-    
+   
+    def on_change_asset2(self,cr,uid,ids,asset_id,asset_id2,context=None):
+        print "ids is %s, asset_id is %s, asset_id2 is %s " % (ids,asset_id,asset_id2)
+        if asset_id2 == asset_id:
+            
+            return {
+                "value":{
+                    "asset_id2":None,
+                },
+                "warning":{
+                    "title":"Warning",
+                    "message":"You cannot choose some asset!You must choose another!",
+                }
+            }
+        return {"value":{
+                "asset_id2":asset_id2,
+            }
+        }
+
     def create(self,cr,uid,data,context=None):
         print "relation is %s " % data
+        if data["asset_id"] == data["asset_id2"]:
+            raise osv.except_osv(_('Cannot connect to self!'),_("You must select another asset !") )
+            
         rel_id = super(AssetRelation,self).create(cr,uid,data,context=context)
         if not rel_id:
             return False
