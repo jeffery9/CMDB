@@ -218,6 +218,7 @@ class AssetTemplate(osv.osv):
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
         result = []
         action_res = []
+        relation_res = []
         parent_ids =  get_tree_low2top("cmdb_assettemplate",cr,uid,parentid,context=context) 
         #self._get_inherit_tree(cr, uid,parentid, context=context)
         attr_rep = self.pool.get("cmdb.assettemplate.attribute")
@@ -229,12 +230,18 @@ class AssetTemplate(osv.osv):
         action_ids = attr_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
         for item in action_rep.read(cr,uid,action_ids,[],context=context):
             action_res.append(item)
+
+        relation_rep = self.pool.get("cmdb.assettemplate.relation")
+        relation_ids = relation_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
+        for item in relation_rep.read(cr,uid,action_ids,[],context=context):
+            relation_res.append(item)
         #result2[ids] = result
         print "result is %s" % result
         return  {
                     "value": {
                         "inherit_attributes" : result,
                         "inherit_actions": action_res,
+                        "inherit_relations": relation_res,
                     }
                 }
     
@@ -326,12 +333,11 @@ AssetTemplateAttribute()
 class AssetTemplateRelation(osv.osv):
     _name = "cmdb.assettemplate.relation"
     
-
     _columns = {
         "assettemplate_id":fields.many2one("cmdb.assettemplate",string="AssetTemplate"),
         "relationtype_id":fields.many2one("cmdb.relationtype",string="Relation Type"),
-        #"relationtype":fields.selection(RELATIONS,string="Relation",required=True),
         "assettemplate_id2":fields.many2one("cmdb.assettemplate",string="AssetTemplate To"),
+        "relationtype_id2":fields.many2one("cmdb.relationtype",string="Relation from type"),
     }
 
     _defaults = {
@@ -413,22 +419,34 @@ class Asset(osv.osv):
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
         result = []
         action_result = []
+        relation_result = []
         parent_ids =  self._get_inherit_tree(cr, uid, ids, parentid, context=context)
         attr_rep = self.pool.get("cmdb.assettemplate.attribute")
         action_rep = self.pool.get("cmdb.assettemplate.action")
+        relation_rep = self.pool.get("cmdb.assettemplate.relation")
+
         attr_ids = attr_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
         action_ids = action_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
+        relation_ids = relation_rep.search(cr,uid,[('assettemplate_id','in',parent_ids)],context=context)
+        
         for item in attr_rep.read(cr,uid,attr_ids,[],context=context):
             item["fromtemplate"] ="yes" #item["yes"]
             result.append(item)
+            print "attr item is %s " % item
+        
         for item in action_rep.read(cr,uid,action_ids,[],context=context):
             action_result.append(item)
+        
+        for item in relation_rep.read(cr,uid,relation_ids,[],context=context):
+            relation_result.append(item)
+            print "relationitem is %s " % item 
         #result2[ids] = result
-        print "result is %s" % result
+        print "result is %s" % relation_result
         return  {
                     "value": {
                         "attributes" : result,
-                        "actions": action_result
+                        "actions": action_result,
+                        "relations": relation_result,
                     }
         }
     
@@ -530,10 +548,9 @@ AssetAction()
 class AssetRelation(osv.osv):
     _name = "cmdb.asset.relation"
    
-    def on_change_asset2(self,cr,uid,ids,asset_id,asset_id2,context=None):
+    def on_change_asset2(self,cr,uid,ids,asset_id,asset_id2,template_relation_id,context=None):
         print "ids is %s, asset_id is %s, asset_id2 is %s " % (ids,asset_id,asset_id2)
         if asset_id2 == asset_id:
-            
             return {
                 "value":{
                     "asset_id2":None,
@@ -553,6 +570,11 @@ class AssetRelation(osv.osv):
         if data["asset_id"] == data["asset_id2"]:
             raise osv.except_osv(_('Cannot connect to self!'),_("You must select another asset !") )
             
+        if isinstance(data["relationtype_id"],(list,tuple)):
+            data["relationtype_id"] = data["relationtype_id"][0]
+        if isinstance(data["relationtype_id2"],(list,tuple)):
+            data["relationtype_id2"] = data["relationtype_id2"][0]
+        print "relation is %s " % data
         rel_id = super(AssetRelation,self).create(cr,uid,data,context=context)
         if not rel_id:
             return False
@@ -563,6 +585,7 @@ class AssetRelation(osv.osv):
 
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
+        "template_relation_id":fields.integer(string="Template Relation Id"),
         "relationtype_id":fields.many2one("cmdb.relationtype",string="Asset to type"),
         "asset_id2":fields.many2one("cmdb.asset",string="Asset To"),
         "relationtype_id2":fields.many2one("cmdb.relationtype",string="Relation from type"),

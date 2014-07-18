@@ -144,6 +144,7 @@
 									<tree string="Relations" version="7.0" editable="bottom">
 										<field name="relationtype_id"/>
 										<field name="assettemplate_id2"/>
+										<field name="relationtype_id2"/>
 									</tree>
 								</field>
 							</page>
@@ -180,6 +181,7 @@
 									<tree string="Inherit Relations" version="7.0">
 										<field name="relationtype_id"/>
 										<field name="assettemplate_id2"/>
+										<field name="relationtype_id2"/>
 									</tree>
 								</field>
 							</page>
@@ -295,8 +297,9 @@
 								<field name="relations">
 									<tree string="Relations" version="7.0" editable="bottom">
 										<field name="relationtype_id"/>
-										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2)"/>
+										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2,template_relation_id)"/>
 										<field name="relationtype_id2"/>
+										<field name="template_relation_id"/>
 									</tree>
 								</field>
 							</page>
