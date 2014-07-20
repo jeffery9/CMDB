@@ -263,6 +263,7 @@ class AssetTemplate(osv.osv):
                                                              categories."),
         'parent_left': fields.integer('Left parent', select=True),
         'parent_right': fields.integer('Right parent', select=True),
+        "haspush":fields.boolean(string="Has Push",tooltip="template has asset instance"),
         "remark":fields.text(string="Remark"),
     }
 
@@ -398,29 +399,46 @@ class Asset(osv.osv):
     _name="cmdb.asset"
     _description = "Asset"
 
+    def create(self,cr,uid,data,context=None):
+        print "asset data is %s " % data
+        template_id = data.get("assettemplate_id")
+        if not template_id:
+            return False
+        tmp_rep = self.pool.get("cmdb.assettemplate")
+        template_item = tmp_rep.read(cr,uid,template_id,["id","haspush"],context=context)
+        if isinstance(template_item,(tuple,list)):
+            template_item = template_item[0]
+
+        print "tempalte item is %s " % template_item 
+
+        asset_id = super(Asset,self).create(cr,uid,data,context=context)
+        if not template_item.get("haspush"):
+            """
+            when first create an asset,must set the state of tempalte to haspush
+            """
+            print "set haspush state to haspush"
+            attr_rep = self.pool.get("cmdb.assettemplate.attribute")
+            action_rep = self.pool.get("cmdb.assettemplate.action")
+            parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,template_item.get("id"),context=context) 
+            attr_ids = attr_rep.search(cr,uid,[("assettemplate_id","in",parent_ids)],context=context)
+            action_ids = action_rep.search(cr,uid,[("assettemplate_id","in",parent_ids)],context=context)
+            for id in parent_ids:
+                tmp_rep.write(cr,uid,id,{"haspush":True},context=context)
+            for id in attr_ids:
+                attr_rep.write(cr,uid,id,{"state":"haspush"},context=context)
+            for id in action_ids:
+                action_rep.write(cr,uid,id,{"state":"haspush"},context=context)
+        return asset_id
+
     def _get_relation_types(self,cr,uid,ids,context=None):
         pass
-
-    def _get_inherit_tree(self,cr,uid,ids,parent_id,context=None):
-        print "parent_id is %s" % parent_id
-        cr.execute("SELECT A.* FROM cmdb_assettemplate as A \
-                    INNER JOIN cmdb_assettemplate as B \
-                    ON 1=1 \
-                    WHERE  A.parent_left < B.parent_left and \
-                        A.parent_left < B.parent_right and   \
-                        B.parent_left < A.parent_right and   \
-                        B.parent_right < A.parent_right      \
-                    AND b.id=%s                               \
-                    ORDER BY A.id" % parent_id)
-        parent_ids = filter(None,map(lambda x:x[0],cr.fetchall()))
-        parent_ids.append(parent_id)
-        return parent_ids
 
     def onchange_parent_get_inherit_attributes(self,cr,uid,ids,parentid,context=None):
         result = []
         action_result = []
         relation_result = []
-        parent_ids =  self._get_inherit_tree(cr, uid, ids, parentid, context=context)
+        #parent_ids =  self._get_inherit_tree(cr, uid, ids, parentid, context=context)
+        parent_ids = get_tree_low2top("cmdb_assettemplate",cr,uid,parentid,context=context) 
         attr_rep = self.pool.get("cmdb.assettemplate.attribute")
         action_rep = self.pool.get("cmdb.assettemplate.action")
         relation_rep = self.pool.get("cmdb.assettemplate.relation")
