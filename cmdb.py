@@ -467,7 +467,60 @@ class Asset(osv.osv):
                         "relations": relation_result,
                     }
         }
-    
+   
+    def backup(self,cr,uid,ids,context=None):
+        print "backup ids is %s " % ids
+        record = self.read(cr,uid,ids,[],context=context)
+        if record:
+            record = record[0]
+       
+        relation_ids = record["relations"]
+        action_ids = record["actions"]
+        attribute_ids = record["attributes"]
+        
+        record["attributes"] = []
+        record["relations"] = []
+        record["actions"] = []
+        record["asset_id"] = record["id"]
+        record["assettemplate_id"] = record["assettemplate_id"][0]
+        cr.execute("select max(version) from cmdb_asset_backup where asset_id=%s" % record["id"])
+        version = cr.fetchone()[0]
+        print "max version is %s " % version 
+        version = version or 0
+        version = version + 1
+        record["version"] = version
+        asset_back_rep = self.pool.get("cmdb.asset.backup")
+        asset_backup_id = asset_back_rep.create(cr,uid,record,context=context)
+        print "asset_back_id is %s " % asset_backup_id
+       
+        attr_rep = self.pool.get("cmdb.asset.attribute")
+        attr_back_rep = self.pool.get("cmdb.asset.attribute.backup")
+        for item in attr_rep.read(cr,uid,attribute_ids,context=context):
+            item["asset_back_id"] = asset_backup_id
+            item["asset_id"] = None
+            item["id"] = None
+            attr_back_rep.create(cr,uid,item,context=context)
+
+        action_rep = self.pool.get("cmdb.asset.action")
+        action_back_rep = self.pool.get("cmdb.asset.action.backup")
+        for item in action_rep.read(cr,uid,action_ids,context=context):
+            item["asset_back_id"] = asset_backup_id
+            item["asset_id"] = None
+            item["id"] = None
+            action_back_rep.create(cr,uid,item,context=context)
+
+        relation_rep = self.pool.get("cmdb.asset.relation")
+        relation_back_rep = self.pool.get("cmdb.asset.relation.backup")
+        for item in relation_rep.read(cr,uid,relation_ids,context=context):
+            print "relation is %s " % item 
+            item["asset_back_id"] = asset_backup_id
+            item["asset_id"] = None
+            item["asset_id2"] = item["asset_id2"][0]
+            item["id"] = None
+            relation_back_rep.create(cr,uid,item,context=context)
+
+        return True 
+
     _columns = {
         #"category_id":fields.many2one("cmdb.assettemplatecategory",string="Category",select=True),
         "name": fields.char(string='Name', size=64, required=True, translate=True, select=True),
@@ -610,3 +663,43 @@ class AssetRelation(osv.osv):
     }
 
 AssetRelation()
+
+class AssetBackup(osv.osv):
+    _inherit = "cmdb.asset"
+    _name = "cmdb.asset.backup"
+
+    _columns = {
+        "asset_id":fields.many2one("cmdb.asset",string="Asset"),
+        "attributes":fields.one2many("cmdb.asset.attribute.backup","asset_back_id",string="Attributes"),
+        "relations":fields.one2many("cmdb.asset.relation.backup","asset_back_id",string="Relations"),
+        "actions":fields.one2many("cmdb.asset.action.backup","asset_back_id",string="Actions"),
+        "version":fields.integer(string="Version"),
+    }
+AssetBackup()
+
+class AssetAttributeBackup(osv.osv):
+    _inherit = "cmdb.asset.attribute"
+    _name = "cmdb.asset.attribute.backup"
+
+    _columns = {
+        "asset_back_id":fields.many2one("cmdb.asset.backup",string="Asset Backup"),
+    }
+AssetAttributeBackup()
+
+class AssetActionBackup(osv.osv):
+    _inherit = "cmdb.asset.action"
+    _name = "cmdb.asset.action.backup"
+
+    _columns = {
+        "asset_back_id":fields.many2one("cmdb.asset.backup",string="Asset Backup"),
+    }
+AssetActionBackup()
+
+class AssetRelationBackup(osv.osv):
+    _inherit = "cmdb.asset.relation"
+    _name = "cmdb.asset.relation.backup"
+
+    _columns = {
+        "asset_back_id":fields.many2one("cmdb.asset.backup",string="Asset Backup"),
+    }
+AssetRelationBackup()

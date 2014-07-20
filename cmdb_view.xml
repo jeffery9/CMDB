@@ -272,6 +272,9 @@
             <field name="model">cmdb.asset</field>
             <field name="arch" type="xml">
                 <form string="Asset" version="7.0">
+					<header>
+						<button name="backup" type="object" string="BackUp"/>
+					</header>
                     <sheet>
                         <group col="4">
                             <field name="assettemplate_id" on_change="onchange_parent_get_inherit_attributes(assettemplate_id)"/>
@@ -330,7 +333,85 @@
             <field name="view_mode">tree,form</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="Template">
+                <tree string="Asset">
+					<field name="assettemplate_id"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+
+		<record id="cmdb_asset_backup_form_view" model="ir.ui.view">
+            <field name="name">cmdb.asset.backup.form</field>
+            <field name="model">cmdb.asset.backup</field>
+            <field name="arch" type="xml">
+                <form string="Asset backup" version="7.0">
+					<header>
+						<button name="restore" type="object" string="Restore"/>
+					</header>
+                    <sheet>
+                        <group col="4">
+							<field name="version"/>
+							<field name="asset_id"/>
+                            <field name="assettemplate_id" on_change="onchange_parent_get_inherit_attributes(assettemplate_id)"/>
+                            <field name="name"/>
+                            <field name="code" readonly="True"/>                            
+							<field name="description"/>
+                        </group>
+                        <group col="4" string="Remark">
+                                <field name="remark" placeholder="Remark...." colspan="4" nolabel="1"/>
+                        </group>
+                        <notebook>
+							<page string="Attributes">
+								<field name="attributes">
+									  <tree string="Attributes" version="7.0" editable="bottom" delete="0">
+										  <field name="fromtemplate" attrs="{'readonly':[('fromtemplate','in',['yes'])]}"/>
+										  <field name="name" attrs="{'readonly':[('fromtemplate','in',['yes'])]}"/>
+										  <field name="code" attrs="{'readonly':[('fromtemplate','in',['yes'])]}"/>
+										  <field name="defaultvalue"/>
+									  </tree> 
+								  </field>
+							</page>                        
+							<page string="Relations">
+								<field name="relations">
+									<tree string="Relations" version="7.0" editable="bottom">
+										<field name="relationtype_id"/>
+										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2,template_relation_id)"/>
+										<field name="relationtype_id2"/>
+										<field name="template_relation_id"/>
+									</tree>
+								</field>
+							</page>
+							<page string="Actions">
+								<field name="actions">
+									<tree string="Actions" version="7.0" editable="bottom">
+										<field name="name"/>
+										<field name="code"/>
+										<field name="executelevel"/>
+										<field name="estimatetime"/>
+										<field name="ordernum"/>
+										<field name="batch"/>
+										<field name="command"/>
+										<field name="cmdcontent"/>
+										</tree> 
+									</field>
+							</page>
+						</notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="cmdb_asset_backup_list_view" model="ir.ui.view">
+            <field name="name">cmdb.asset.backup.list</field>
+            <field name="model">cmdb.asset.backup</field>
+            <field name="priority">1</field>
+            <field name="view_mode">tree,form</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Asset backup">
+					<field name="asset_id"/>
+					<field name="version"/>
 					<field name="assettemplate_id"/>
                     <field name="name"/>
                     <field name="code"/>
@@ -427,7 +508,14 @@
 			<field name="search_view_id" ref="view_cmdb_asset_filter"/>
         </record>
        
-		<menuitem id="menu_cmdb_root" name="CMDB" sequence="10" />
+       <record id="cmdb_action_asset_backup_show" model="ir.actions.act_window">
+            <field name="name">Asset backup</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cmdb.asset.backup</field>
+            <!--<field name="domain">[('parent_id','=',False)]</field>-->
+            <field name="domain">[]</field>
+            <field name="view_type">form</field>
+        </record>
        
 		<menuitem id="menu_cmdb_root" name="CMDB" sequence="10" />
 		<menuitem id="menu_cmdb_template_root" name="Templates" parent="menu_cmdb_root" sequence="20"/>
@@ -437,5 +525,6 @@
 		<menuitem id="menu_cmdb_template_attirbute_manager" action="cmdb_action_templateattribute_show" name="TemplateAttributes" parent="menu_cmdb_template_root" sequence="30"/>
 		<menuitem id="menu_cmdb_asset_root" name="Assets" parent="menu_cmdb_root" sequence="30"/>
 		<menuitem id="menu_cmdb_asset_manager" action="cmdb_action_asset_show" name="Assets" parent="menu_cmdb_asset_root" sequence="30"/>
+		<menuitem id="menu_cmdb_asset_backup_manager" action="cmdb_action_asset_backup_show" name="Asset Backup" parent="menu_cmdb_asset_root" sequence="30"/>
 	</data>
 </openerp>
