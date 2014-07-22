@@ -274,7 +274,7 @@
                 <form string="Asset" version="7.0">
 					<header>
 						<button name="backup" type="object" string="BackUp"/>
-						<button name="%(cmdb_action_asset_backup_show)d" type="action" string="Histories"/>
+						<button name="histories" type="object" string="Histories"/>
 					</header>
                     <sheet>
                         <group col="4">
@@ -301,9 +301,7 @@
 								<field name="relations">
 									<tree string="Relations" version="7.0" editable="bottom">
 										<field name="relationtype_id"/>
-										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2,template_relation_id)"/>
-										<field name="relationtype_id2"/>
-										<field name="template_relation_id"/>
+										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2)"/>
 									</tree>
 								</field>
 							</page>
@@ -364,7 +362,7 @@
             <field name="arch" type="xml">
                 <form string="Asset backup" version="7.0">
 					<header>
-						<button name="restore" type="object" string="Restore"/>
+						<button name="restore" type="object" string="Restore" confirm="This operation is very dangerous,are you sure?"/>
 					</header>
                     <sheet>
                         <group col="4">
@@ -393,9 +391,7 @@
 								<field name="relations">
 									<tree string="Relations" version="7.0" editable="bottom">
 										<field name="relationtype_id"/>
-										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2,template_relation_id)"/>
-										<field name="relationtype_id2"/>
-										<field name="template_relation_id"/>
+										<field name="asset_id2" on_change="on_change_asset2(parent.id,asset_id2)"/>
 									</tree>
 								</field>
 							</page>
@@ -529,8 +525,8 @@
             <field name="name">Asset backup</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cmdb.asset.backup</field>
+			<field name="domain">[]</field>
             <!--<field name="domain">[('parent_id','=',False)]</field>-->
-            <field name="domain">[]</field>
             <field name="view_type">form</field>
         </record>
        

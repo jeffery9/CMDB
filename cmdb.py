@@ -301,6 +301,7 @@ class AssetTemplateAttribute(osv.osv):
         asset_attr_rep = self.pool.get("cmdb.asset.attribute")
         for asset_id in asset_ids:
             template["asset_id"] = asset_id
+            template["fromtemplate"] = True
             print "attr instance is %s " % template
             asset_attr_rep.create(cr,uid,template,context=context)
         self.write(cr,uid,ids,{'state':'haspush'},context=context)
@@ -467,7 +468,23 @@ class Asset(osv.osv):
                         "relations": relation_result,
                     }
         }
-   
+
+    def histories(self,cr,uid,ids,context=None):
+        print "histories parameters ids is %s" % ids
+        domain = [("asset_id","in",ids)]
+        print "domain is %s" % domain
+        return {
+            "name":_("Asset Backup"),
+            "domain":domain,
+            "res_model":"cmdb.asset.backup",
+            "type":"ir.actions.act_window",
+            "view_id":False,
+            "view_mode":"tree,form",
+            "view_type":"form",
+            "limit":80,
+            "context":context
+        }
+
     def backup(self,cr,uid,ids,context=None):
         print "backup ids is %s " % ids
         record = self.read(cr,uid,ids,[],context=context)
@@ -593,6 +610,8 @@ class AssetAction(osv.osv):
     def get_format_asset_action(self,cr,uid,ids,name,arg,context=None):
         result = dict.fromkeys(ids,'None')
         for item in self.read(cr,uid,ids,['id','asset_id','command'],context=context):
+            print "get_format_asset_action item is %s " % item
+            print "type names is %s" % type(self)._name
             result[item["id"]] = self._format_action_command(cr,uid,item["asset_id"][0],item["command"],context=context)
             print result
             #result[item["id"]] = "abc"
@@ -619,7 +638,7 @@ AssetAction()
 class AssetRelation(osv.osv):
     _name = "cmdb.asset.relation"
    
-    def on_change_asset2(self,cr,uid,ids,asset_id,asset_id2,template_relation_id,context=None):
+    def on_change_asset2(self,cr,uid,ids,asset_id,asset_id2,context=None):
         print "ids is %s, asset_id is %s, asset_id2 is %s " % (ids,asset_id,asset_id2)
         if asset_id2 == asset_id:
             return {
@@ -643,15 +662,13 @@ class AssetRelation(osv.osv):
             
         if isinstance(data["relationtype_id"],(list,tuple)):
             data["relationtype_id"] = data["relationtype_id"][0]
-        if isinstance(data["relationtype_id2"],(list,tuple)):
-            data["relationtype_id2"] = data["relationtype_id2"][0]
         print "relation is %s " % data
         rel_id = super(AssetRelation,self).create(cr,uid,data,context=context)
-        if not rel_id:
-            return False
-        rel_from = {"asset_id":data["asset_id2"],"relationtype_id":data["relationtype_id2"],"asset_id2":data["asset_id"],"relationtype_id2":data["relationtype_id"]}
-        print "rel_from is %s " % rel_from
-        super(AssetRelation,self).create(cr,uid,rel_from,context=context)
+        #if not rel_id:
+        #    return False
+        #rel_from = {"asset_id":data["asset_id2"],"relationtype_id":data["relationtype_id"],"asset_id2":data["asset_id"]}
+        #print "rel_from is %s " % rel_from
+        #super(AssetRelation,self).create(cr,uid,rel_from,context=context)
         return rel_id
 
     _columns = {
@@ -659,7 +676,6 @@ class AssetRelation(osv.osv):
         "template_relation_id":fields.integer(string="Template Relation Id"),
         "relationtype_id":fields.many2one("cmdb.relationtype",string="Asset to type"),
         "asset_id2":fields.many2one("cmdb.asset",string="Asset To"),
-        "relationtype_id2":fields.many2one("cmdb.relationtype",string="Relation from type"),
     }
 
 AssetRelation()
@@ -667,6 +683,25 @@ AssetRelation()
 class AssetBackup(osv.osv):
     _inherit = "cmdb.asset"
     _name = "cmdb.asset.backup"
+
+    def restore(self,cr,uid,ids,context=None):
+        """
+        restore to this version
+        """
+        #id = ids and ids[0] or None
+        record = self.read(cr,uid,ids,[],context=context)
+        print "record is %s" % record
+        record = record and record[0]
+        return {
+            "name":"Asset",
+            "domain":[("id","=",record["asset_id"])],
+            "type":"ir.actions.act_window",
+            "res_model":"cmdb.asset",
+            "view_id":None,
+            "view_mode":"form,tree",
+            "view_type":"form",
+            "limit":80,
+        }
 
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
