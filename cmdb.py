@@ -564,11 +564,6 @@ Asset()
 class AssetAttribute(osv.osv):
     _name="cmdb.asset.attribute"
    
-    def unlink(self,cr,uid,ids,context=None):
-        res = self.read(cr,uid,ids,["id","fromtemplate"],context=context)
-        print "res %s " % res
-        return True
-
     _columns = {
         "asset_id":fields.many2one("cmdb.asset",string="Asset"),
         "name":fields.char(string="Name",size=200,required=True,help="The name of the attribute"),
@@ -612,7 +607,8 @@ class AssetAction(osv.osv):
         for item in self.read(cr,uid,ids,['id','asset_id','command'],context=context):
             print "get_format_asset_action item is %s " % item
             print "type names is %s" % type(self)._name
-            result[item["id"]] = self._format_action_command(cr,uid,item["asset_id"][0],item["command"],context=context)
+            if type(self)._name != "cmdb.asset.action.backup":
+                result[item["id"]] = self._format_action_command(cr,uid,item["asset_id"][0],item["command"],context=context)
             print result
             #result[item["id"]] = "abc"
         return result
@@ -690,17 +686,58 @@ class AssetBackup(osv.osv):
         """
         #id = ids and ids[0] or None
         record = self.read(cr,uid,ids,[],context=context)
-        print "record is %s" % record
+        #print "record is %s" % record
         record = record and record[0]
+        asset_id = record["asset_id"][0]
+
+        asset_rep = self.pool.get("cmdb.asset")
+        attr_back_rep = self.pool.get("cmdb.asset.attribute.backup")
+        action_back_rep = self.pool.get("cmdb.asset.action.backup")
+        relation_back_rep = self.pool.get("cmdb.asset.relation.backup")
+        attr_rep = self.pool.get("cmdb.asset.attribute")
+        action_rep = self.pool.get("cmdb.asset.action")
+        relation_rep = self.pool.get("cmdb.asset.relation")
+
+        asset_item = asset_rep.read(cr,uid,asset_id,context=context)
+        attr_back_items = attr_back_rep.read(cr,uid,record["attributes"],[],context=context)
+        action_back_items = action_back_rep.read(cr,uid,record["actions"],[],context=context)
+        relation_back_items = relation_back_rep.read(cr,uid,record["relations"],[],context=context)
+
+        try:
+            asset_update_item = {"name":record["name"],"description":record["description"],"remark":record["remark"]}
+            asset_rep.write(cr,uid,asset_id,asset_update_item)
+
+            attr_rep.unlink(cr,uid,asset_item["attributes"],context=context)
+            action_rep.unlink(cr,uid,asset_item["actions"],context=context)
+            relation_rep.unlink(cr,uid,asset_item["relations"],context=context)
+
+            for item in attr_back_items:
+                item["asset_id"] = asset_id
+                attr_rep.create(cr,uid,item,context=context)
+
+            for item in action_back_items:
+                item["asset_id"] = asset_id
+                action_rep.create(cr,uid,item,context=context)
+
+            for item in relation_back_items:
+                item["asset_id"] = asset_id
+                item["asset_id2"] = item["asset_id2"][0]
+                item["relationtype_id"] = item["relationtype_id"][0]
+                relation_rep.create(cr,uid,item,context=context)
+            cr.commit()
+        except Exception:
+            cr.rollback()
+            raise
+
         return {
             "name":"Asset",
-            "domain":[("id","=",record["asset_id"])],
             "type":"ir.actions.act_window",
             "res_model":"cmdb.asset",
             "view_id":None,
             "view_mode":"form,tree",
             "view_type":"form",
             "limit":80,
+            "res_id":asset_id,
         }
 
     _columns = {
